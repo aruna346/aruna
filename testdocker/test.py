@@ -1,7 +1,7 @@
 import json
 
 # Specify the path to the JSON file
-json_file_path = "data.json"
+json_file_path = "config_test.json"
 
 # Read the data from the JSON file
 with open(json_file_path, "r") as json_file:
