@@ -19,13 +19,15 @@ stage('Push to Docker Hub') {
                 sh 'docker tag testdocker aruna17/aruna:testdocker'
                 sh "docker push aruna17/aruna:testdocker"
             }
-        }*/
+        }
 
  
 
         stage('Pull Docker Image on EC2') {
             steps {
                 script {
+                    EC2_USER=ubuntu
+                    EC2_host=3.142.12.173
                     withCredentials([file(credentialsId: 'pemkey', variable: 'PRIVATE_KEY_FILE')]) {
                         sh """
                             chmod 400 \$PRIVATE_KEY_FILE
