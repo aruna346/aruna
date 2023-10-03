@@ -1,6 +1,5 @@
 pipeline {
     agent any
- 
 
     stages {
         stage('Build') {
@@ -11,28 +10,27 @@ pipeline {
                 }
             }
         }
-    }
-stage('Push to Docker Hub') {
+
+        stage('Push to Docker Hub') {
             steps {
-                sh "docker login -u yarramreddyaruna4@gmail.com -p 'Aruna@!#15'"
-                sh 'docker tag testdocker aruna17/aruna:testdocker'
-                sh "docker push aruna17/aruna:testdocker"
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh "docker login -u $DOCKER_USER -p $DOCKER_PASSWORD"
+                    sh 'docker tag testdocker aruna17/aruna:testdocker'
+                    sh "docker push aruna17/aruna:testdocker"
+                }
             }
         }
-
- 
 
         stage('Pull Docker Image on EC2') {
             steps {
                 script {
-                    EC2_USER='ubuntu'
-                    EC2_host='3.142.12.173'
+                    EC2_USER = 'ubuntu'
+                    EC2_HOST = '3.142.12.173'
                     withCredentials([file(credentialsId: 'pemkey', variable: 'PRIVATE_KEY_FILE')]) {
                         sh """
                             chmod 400 \$PRIVATE_KEY_FILE
-                            ssh -i \$PRIVATE_KEY_FILE -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \$EC2_USER@\$EC2_HOST<< EOF
-
-                            sh "docker login -u yarramreddyaruna4@gmail.com -p 'Aruna@!#15'"
+                            ssh -i \$PRIVATE_KEY_FILE -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \$EC2_USER@\$EC2_HOST <<EOF
+                            docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
                             sudo docker pull aruna17/aruna:testdocker
                             docker run -d -p 5000:5000 aruna17/aruna:testdocker
                             EOF
@@ -42,6 +40,4 @@ stage('Push to Docker Hub') {
             }
         }
     }
-
-
-
+}
